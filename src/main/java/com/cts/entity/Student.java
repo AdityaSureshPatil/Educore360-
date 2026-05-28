@@ -1,0 +1,53 @@
+package com.cts.entity;
+
+import java.time.LocalDate;
+import jakarta.persistence.*;
+import lombok.*;
+
+@Entity
+@Table(name = "student")
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+public class Student {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "student_id")
+    private Long studentId;
+
+    @OneToOne
+    @JoinColumn(name = "user_id", referencedColumnName = "user_id", nullable = false)
+    private User user;
+
+    @Column(name = "enrollment_number", nullable = false, unique = true, length = 20)
+    private String enrollmentNumber;
+
+    @Column(name = "date_of_birth")
+    private LocalDate dateOfBirth;
+
+    @Column(name = "education_level", length = 100)
+    private String educationLevel;
+
+    @Column(name = "field_of_interest", length = 150)
+    private String fieldOfInterest;
+
+    @Column(name = "country", length = 100)
+    private String country;
+
+    @Column(name = "bio", columnDefinition = "TEXT")
+    private String bio;
+
+    @Column(name = "emergency_contact", length = 15)
+    private String emergencyContact;
+
+    @Column(name = "address_line", length = 255)
+    private String addressLine;
+
+    @Column(name = "postal_code", length = 10)
+    private String postalCode;
+
+    @Column(name = "status", nullable = false)
+    private String status;
+}
