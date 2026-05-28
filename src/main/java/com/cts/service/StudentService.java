@@ -1,6 +1,7 @@
 package com.cts.service;
 
 import com.cts.dto.AssignmentOutputDTO;
+import com.cts.dto.EnrollmentOutputDTO;
 import com.cts.dto.StudentInputDTO;
 import com.cts.dto.StudentOutputDTO;
 import com.cts.dto.SubmissionOutputDTO;
@@ -13,12 +14,21 @@ public interface StudentService {
 
     StudentOutputDTO getStudentById(Long studentId);
 
+    // Student self-enrolls in a course
+    EnrollmentOutputDTO enrollInCourse(Long studentId, Long courseId);
+
+    // View all courses student is enrolled in
+    List<EnrollmentOutputDTO> getMyEnrolledCourses(Long studentId);
+
     // Only enrolled students can view assignments
     List<AssignmentOutputDTO> getAssignmentsForCourse(Long studentId, Long courseId);
 
-    // Only enrolled students can download
-    byte[] downloadAssignmentFile(Long studentId, Long assignmentId);
+    // Download course material PDF (enrolled students only)
+    byte[] downloadCourseMaterial(Long studentId, Long courseId);
+    String getCourseMaterialFileName(Long studentId, Long courseId);
 
+    // Download assignment PDF (enrolled students only)
+    byte[] downloadAssignmentFile(Long studentId, Long assignmentId);
     String getAssignmentFileName(Long studentId, Long assignmentId);
 
     // Only enrolled students can submit

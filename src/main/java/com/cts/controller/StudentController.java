@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import com.cts.dto.AssignmentOutputDTO;
+import com.cts.dto.EnrollmentOutputDTO;
 import com.cts.dto.StudentInputDTO;
 import com.cts.dto.StudentOutputDTO;
 import com.cts.dto.SubmissionOutputDTO;
@@ -27,8 +28,8 @@ public class StudentController {
     @PutMapping("/profile/update")
     public ResponseEntity<StudentOutputDTO> updateStudentProfile(
             @Valid @RequestBody StudentInputDTO inputDTO) {
-        StudentOutputDTO response = studentService.updateStudentProfile(inputDTO);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return new ResponseEntity<>(
+                studentService.updateStudentProfile(inputDTO), HttpStatus.OK);
     }
 
     // 2. GET STUDENT BY ID
@@ -36,31 +37,48 @@ public class StudentController {
     @GetMapping("/{studentId}")
     public ResponseEntity<StudentOutputDTO> getStudentById(
             @PathVariable Long studentId) {
-        StudentOutputDTO response = studentService.getStudentById(studentId);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return new ResponseEntity<>(
+                studentService.getStudentById(studentId), HttpStatus.OK);
     }
 
-    // 3. VIEW ALL ASSIGNMENTS FOR A COURSE (enrolled students only)
+    // 3. SELF ENROLL IN A COURSE
+    // POST /student/{studentId}/course/{courseId}/enroll
+    @PostMapping("/{studentId}/course/{courseId}/enroll")
+    public ResponseEntity<EnrollmentOutputDTO> enrollInCourse(
+            @PathVariable Long studentId,
+            @PathVariable Long courseId) {
+        return new ResponseEntity<>(
+                studentService.enrollInCourse(studentId, courseId), HttpStatus.CREATED);
+    }
+
+    // 4. VIEW MY ENROLLED COURSES
+    // GET /student/{studentId}/my-courses
+    @GetMapping("/{studentId}/my-courses")
+    public ResponseEntity<List<EnrollmentOutputDTO>> getMyEnrolledCourses(
+            @PathVariable Long studentId) {
+        return new ResponseEntity<>(
+                studentService.getMyEnrolledCourses(studentId), HttpStatus.OK);
+    }
+
+    // 5. VIEW ASSIGNMENTS FOR AN ENROLLED COURSE
     // GET /student/{studentId}/course/{courseId}/assignments
     @GetMapping("/{studentId}/course/{courseId}/assignments")
     public ResponseEntity<List<AssignmentOutputDTO>> getAssignmentsForCourse(
             @PathVariable Long studentId,
             @PathVariable Long courseId) {
-        List<AssignmentOutputDTO> assignments = studentService
-                .getAssignmentsForCourse(studentId, courseId);
-        return new ResponseEntity<>(assignments, HttpStatus.OK);
+        return new ResponseEntity<>(
+                studentService.getAssignmentsForCourse(studentId, courseId),
+                HttpStatus.OK);
     }
 
-    // 4. DOWNLOAD ASSIGNMENT PDF (enrolled students only)
-    // GET /student/{studentId}/assignment/{assignmentId}/download
-    @GetMapping("/{studentId}/assignment/{assignmentId}/download")
-    public ResponseEntity<byte[]> downloadAssignmentFile(
+    // 6. DOWNLOAD COURSE MATERIAL PDF (enrolled students only)
+    // GET /student/{studentId}/course/{courseId}/material/download
+    @GetMapping("/{studentId}/course/{courseId}/material/download")
+    public ResponseEntity<byte[]> downloadCourseMaterial(
             @PathVariable Long studentId,
-            @PathVariable Long assignmentId) {
-
-        byte[] fileBytes = studentService.downloadAssignmentFile(studentId, assignmentId);
-        String fileName = studentService.getAssignmentFileName(studentId, assignmentId);
-
+            @PathVariable Long courseId) {
+        byte[] fileBytes = studentService.downloadCourseMaterial(studentId, courseId);
+        String fileName = studentService.getCourseMaterialFileName(studentId, courseId);
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_PDF)
                 .header(HttpHeaders.CONTENT_DISPOSITION,
@@ -68,7 +86,22 @@ public class StudentController {
                 .body(fileBytes);
     }
 
-    // 5. SUBMIT ASSIGNMENT PDF (enrolled students only)
+    // 7. DOWNLOAD ASSIGNMENT PDF (enrolled students only)
+    // GET /student/{studentId}/assignment/{assignmentId}/download
+    @GetMapping("/{studentId}/assignment/{assignmentId}/download")
+    public ResponseEntity<byte[]> downloadAssignmentFile(
+            @PathVariable Long studentId,
+            @PathVariable Long assignmentId) {
+        byte[] fileBytes = studentService.downloadAssignmentFile(studentId, assignmentId);
+        String fileName = studentService.getAssignmentFileName(studentId, assignmentId);
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"" + fileName + "\"")
+                .body(fileBytes);
+    }
+
+    // 8. SUBMIT ASSIGNMENT PDF (enrolled students only)
     // POST /student/{studentId}/assignment/{assignmentId}/submit
     @PostMapping(value = "/{studentId}/assignment/{assignmentId}/submit",
                  consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -76,18 +109,17 @@ public class StudentController {
             @PathVariable Long studentId,
             @PathVariable Long assignmentId,
             @RequestParam("file") MultipartFile file) {
-        SubmissionOutputDTO response = studentService.submitAssignment(
-                studentId, assignmentId, file);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+        return new ResponseEntity<>(
+                studentService.submitAssignment(studentId, assignmentId, file),
+                HttpStatus.CREATED);
     }
 
-    // 6. VIEW MY SUBMISSIONS
+    // 9. VIEW MY SUBMISSIONS
     // GET /student/{studentId}/my-submissions
     @GetMapping("/{studentId}/my-submissions")
     public ResponseEntity<List<SubmissionOutputDTO>> getMySubmissions(
             @PathVariable Long studentId) {
-        List<SubmissionOutputDTO> submissions = studentService
-                .getMySubmissions(studentId);
-        return new ResponseEntity<>(submissions, HttpStatus.OK);
+        return new ResponseEntity<>(
+                studentService.getMySubmissions(studentId), HttpStatus.OK);
     }
 }

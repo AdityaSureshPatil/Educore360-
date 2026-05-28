@@ -1,6 +1,5 @@
 package com.cts.serviceimpl;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
@@ -8,19 +7,14 @@ import com.cts.dto.EnrollmentOutputDTO;
 import com.cts.dto.RegistrarCourseCreateDTO;
 import com.cts.dto.RegistrarCourseResponseDTO;
 import com.cts.entity.Course;
-import com.cts.entity.CourseEnrollment;
 import com.cts.entity.Instructor;
-import com.cts.entity.Student;
 import com.cts.exception.AcademicException;
 import com.cts.exception.CourseAlreadyExistsException;
 import com.cts.exception.CourseNotFoundException;
-import com.cts.exception.EnrollmentException;
 import com.cts.exception.InstructorNotFoundException;
-import com.cts.exception.StudentNotFoundException;
 import com.cts.repository.CourseEnrollmentRepository;
 import com.cts.repository.CourseRepository;
 import com.cts.repository.InstructorRepository;
-import com.cts.repository.StudentRepository;
 import com.cts.service.RegistrarAcademicService;
 import lombok.AllArgsConstructor;
 
@@ -30,7 +24,6 @@ public class RegistrarAcademicServiceImpl implements RegistrarAcademicService {
 
     private final CourseRepository courseRepository;
     private final InstructorRepository instructorRepository;
-    private final StudentRepository studentRepository;
     private final CourseEnrollmentRepository enrollmentRepository;
 
     // ── CREATE COURSE ─────────────────────────────────────────────────
@@ -38,12 +31,10 @@ public class RegistrarAcademicServiceImpl implements RegistrarAcademicService {
     @Override
     public RegistrarCourseResponseDTO provisionNewCourse(
             RegistrarCourseCreateDTO createDTO) {
-
         if (courseRepository.existsByTitleIgnoreCase(createDTO.getTitle())) {
             throw new CourseAlreadyExistsException(
                     "A course titled '" + createDTO.getTitle() + "' already exists.");
         }
-
         Course course = Course.builder()
                 .title(createDTO.getTitle())
                 .credits(createDTO.getCredits())
@@ -53,7 +44,6 @@ public class RegistrarAcademicServiceImpl implements RegistrarAcademicService {
                 .isPublished(false)
                 .instructor(null)
                 .build();
-
         return mapToResponseDTO(courseRepository.save(course));
     }
 
@@ -65,17 +55,14 @@ public class RegistrarAcademicServiceImpl implements RegistrarAcademicService {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new AcademicException(
                         "Course not found with id: " + courseId));
-
         Instructor instructor = instructorRepository.findById(instructorId)
                 .orElseThrow(() -> new InstructorNotFoundException(
                         "Instructor not found with id: " + instructorId));
-
         if (instructor.getUser() != null
                 && !"ACTIVE".equalsIgnoreCase(instructor.getUser().getStatus())) {
             throw new AcademicException(
                     "Cannot assign an INACTIVE instructor to a course.");
         }
-
         course.setInstructor(instructor);
         return mapToResponseDTO(courseRepository.save(course));
     }
@@ -90,52 +77,29 @@ public class RegistrarAcademicServiceImpl implements RegistrarAcademicService {
                 .collect(Collectors.toList());
     }
 
-    // ── ENROLL STUDENT IN COURSE ──────────────────────────────────────
-
-    @Override
-    public EnrollmentOutputDTO enrollStudentInCourse(Long courseId, Long studentId) {
-
-        Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new CourseNotFoundException(
-                        "Course not found with id: " + courseId));
-
-        Student student = studentRepository.findById(studentId)
-                .orElseThrow(() -> new StudentNotFoundException(
-                        "Student not found with id: " + studentId));
-
-        // Prevent duplicate enrollment
-        if (enrollmentRepository
-                .existsByStudent_StudentIdAndCourse_CourseId(studentId, courseId)) {
-            throw new EnrollmentException(
-                    "Student id " + studentId
-                    + " is already enrolled in course id " + courseId);
-        }
-
-        CourseEnrollment enrollment = CourseEnrollment.builder()
-                .student(student)
-                .course(course)
-                .enrolledAt(LocalDate.now())
-                .status("ACTIVE")
-                .build();
-
-        return mapToEnrollmentOutputDTO(enrollmentRepository.save(enrollment));
-    }
-
-    // ── VIEW ENROLLED STUDENTS ────────────────────────────────────────
+    // ── VIEW ENROLLED STUDENTS (read-only for registrar) ─────────────
 
     @Override
     public List<EnrollmentOutputDTO> getEnrolledStudents(Long courseId) {
         courseRepository.findById(courseId)
                 .orElseThrow(() -> new CourseNotFoundException(
                         "Course not found with id: " + courseId));
-
         return enrollmentRepository.findByCourse_CourseId(courseId)
                 .stream()
-                .map(this::mapToEnrollmentOutputDTO)
+                .map(e -> EnrollmentOutputDTO.builder()
+                        .enrollmentId(e.getEnrollmentId())
+                        .courseId(e.getCourse().getCourseId())
+                        .courseTitle(e.getCourse().getTitle())
+                        .studentId(e.getStudent().getStudentId())
+                        .studentName(e.getStudent().getUser().getName())
+                        .enrollmentNumber(e.getStudent().getEnrollmentNumber())
+                        .enrolledAt(e.getEnrolledAt())
+                        .status(e.getStatus())
+                        .build())
                 .collect(Collectors.toList());
     }
 
-    // ── Helpers ───────────────────────────────────────────────────────
+    // ── Helper ────────────────────────────────────────────────────────
 
     private RegistrarCourseResponseDTO mapToResponseDTO(Course course) {
         RegistrarCourseResponseDTO.RegistrarCourseResponseDTOBuilder builder =
@@ -146,7 +110,6 @@ public class RegistrarAcademicServiceImpl implements RegistrarAcademicService {
                         .syllabusPath(course.getSyllabusPath())
                         .version(course.getVersion())
                         .status(course.getStatus());
-
         if (course.getInstructor() != null) {
             builder.instructorId(course.getInstructor().getInstructorId());
             if (course.getInstructor().getUser() != null) {
@@ -154,18 +117,5 @@ public class RegistrarAcademicServiceImpl implements RegistrarAcademicService {
             }
         }
         return builder.build();
-    }
-
-    private EnrollmentOutputDTO mapToEnrollmentOutputDTO(CourseEnrollment e) {
-        return EnrollmentOutputDTO.builder()
-                .enrollmentId(e.getEnrollmentId())
-                .courseId(e.getCourse().getCourseId())
-                .courseTitle(e.getCourse().getTitle())
-                .studentId(e.getStudent().getStudentId())
-                .studentName(e.getStudent().getUser().getName())
-                .enrollmentNumber(e.getStudent().getEnrollmentNumber())
-                .enrolledAt(e.getEnrolledAt())
-                .status(e.getStatus())
-                .build();
     }
 }

@@ -13,9 +13,6 @@ public interface RegistrarAcademicService {
 
     List<RegistrarCourseResponseDTO> getAllConfiguredCourses();
 
-    // Enroll a student in a course
-    EnrollmentOutputDTO enrollStudentInCourse(Long courseId, Long studentId);
-
-    // View all students enrolled in a course
+    // View all students enrolled in a course (read-only for registrar)
     List<EnrollmentOutputDTO> getEnrolledStudents(Long courseId);
 }
