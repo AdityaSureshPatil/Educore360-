@@ -1,5 +1,6 @@
 package com.cts.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
@@ -30,5 +31,6 @@ public class RegistrationInputDTO {
 
     @NotBlank(message = "Phone number is required")
     @Pattern(regexp = "^\\d{10}$", message = "Phone number must be exactly 10 digits")
+    @Schema(example="string")
     private String phone;
 }

@@ -6,6 +6,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import com.cts.enumerate.Role;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 @Entity
 @Table(name = "users")
 @Data
@@ -28,7 +30,8 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     private Role role;
-
+    
+    
     private String phone;
 
     private String status;

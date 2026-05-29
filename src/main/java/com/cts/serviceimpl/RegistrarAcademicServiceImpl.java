@@ -26,15 +26,31 @@ public class RegistrarAcademicServiceImpl implements RegistrarAcademicService {
     private final InstructorRepository instructorRepository;
     private final CourseEnrollmentRepository enrollmentRepository;
 
-    // ── CREATE COURSE ─────────────────────────────────────────────────
+    // ── CREATE COURSE + ASSIGN INSTRUCTOR (combined) ──────────────────
 
     @Override
     public RegistrarCourseResponseDTO provisionNewCourse(
             RegistrarCourseCreateDTO createDTO) {
+
+        // 1. Check duplicate course title
         if (courseRepository.existsByTitleIgnoreCase(createDTO.getTitle())) {
             throw new CourseAlreadyExistsException(
                     "A course titled '" + createDTO.getTitle() + "' already exists.");
         }
+
+        // 2. Fetch and validate instructor
+        Instructor instructor = instructorRepository
+                .findById(createDTO.getInstructorId())
+                .orElseThrow(() -> new InstructorNotFoundException(
+                        "Instructor not found with id: " + createDTO.getInstructorId()));
+
+        if (instructor.getUser() != null
+                && !"ACTIVE".equalsIgnoreCase(instructor.getUser().getStatus())) {
+            throw new AcademicException(
+                    "Cannot assign an INACTIVE instructor to a course.");
+        }
+
+        // 3. Build course with instructor already linked
         Course course = Course.builder()
                 .title(createDTO.getTitle())
                 .credits(createDTO.getCredits())
@@ -42,28 +58,9 @@ public class RegistrarAcademicServiceImpl implements RegistrarAcademicService {
                 .version(createDTO.getVersion())
                 .status("DRAFT")
                 .isPublished(false)
-                .instructor(null)
+                .instructor(instructor)
                 .build();
-        return mapToResponseDTO(courseRepository.save(course));
-    }
 
-    // ── ASSIGN INSTRUCTOR ─────────────────────────────────────────────
-
-    @Override
-    public RegistrarCourseResponseDTO assignInstructorToCourse(Long courseId,
-                                                                Long instructorId) {
-        Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new AcademicException(
-                        "Course not found with id: " + courseId));
-        Instructor instructor = instructorRepository.findById(instructorId)
-                .orElseThrow(() -> new InstructorNotFoundException(
-                        "Instructor not found with id: " + instructorId));
-        if (instructor.getUser() != null
-                && !"ACTIVE".equalsIgnoreCase(instructor.getUser().getStatus())) {
-            throw new AcademicException(
-                    "Cannot assign an INACTIVE instructor to a course.");
-        }
-        course.setInstructor(instructor);
         return mapToResponseDTO(courseRepository.save(course));
     }
 
@@ -77,7 +74,7 @@ public class RegistrarAcademicServiceImpl implements RegistrarAcademicService {
                 .collect(Collectors.toList());
     }
 
-    // ── VIEW ENROLLED STUDENTS (read-only for registrar) ─────────────
+    // ── VIEW ENROLLED STUDENTS ────────────────────────────────────────
 
     @Override
     public List<EnrollmentOutputDTO> getEnrolledStudents(Long courseId) {

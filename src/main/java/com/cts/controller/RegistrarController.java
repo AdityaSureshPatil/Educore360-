@@ -31,7 +31,7 @@ public class RegistrarController {
                 profileService.updateRegistrarProfile(inputDTO), HttpStatus.OK);
     }
 
-    // 2. CREATE A NEW COURSE
+    // 2. CREATE COURSE + ASSIGN INSTRUCTOR (combined)
     // POST /api/academic/registrar/course
     @PostMapping("/registrar/course")
     public ResponseEntity<RegistrarCourseResponseDTO> provisionNewCourse(
@@ -40,18 +40,7 @@ public class RegistrarController {
                 academicService.provisionNewCourse(createDTO), HttpStatus.CREATED);
     }
 
-    // 3. ASSIGN INSTRUCTOR TO COURSE
-    // PUT /api/academic/course/{courseId}/assign-instructor/{instructorId}
-    @PutMapping("/course/{courseId}/assign-instructor/{instructorId}")
-    public ResponseEntity<RegistrarCourseResponseDTO> assignInstructorToCourse(
-            @PathVariable Long courseId,
-            @PathVariable Long instructorId) {
-        return new ResponseEntity<>(
-                academicService.assignInstructorToCourse(courseId, instructorId),
-                HttpStatus.OK);
-    }
-
-    // 4. VIEW ALL COURSES
+    // 3. VIEW ALL COURSES
     // GET /api/academic/registrar/courses
     @GetMapping("/registrar/courses")
     public ResponseEntity<List<RegistrarCourseResponseDTO>> getAllConfiguredCourses() {
@@ -59,7 +48,7 @@ public class RegistrarController {
                 academicService.getAllConfiguredCourses(), HttpStatus.OK);
     }
 
-    // 5. VIEW ALL ENROLLED STUDENTS FOR A COURSE (read-only)
+    // 4. VIEW ALL ENROLLED STUDENTS FOR A COURSE
     // GET /api/academic/course/{courseId}/enrolled-students
     @GetMapping("/course/{courseId}/enrolled-students")
     public ResponseEntity<List<EnrollmentOutputDTO>> getEnrolledStudents(

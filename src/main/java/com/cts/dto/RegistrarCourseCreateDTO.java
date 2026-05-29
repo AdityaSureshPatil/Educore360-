@@ -23,4 +23,9 @@ public class RegistrarCourseCreateDTO {
 
     @NotBlank(message = "Course framework version string is required")
     private String version;
+
+    // Instructor assigned at course creation time
+    @NotNull(message = "Instructor ID is required")
+    @Positive(message = "Instructor ID must be a positive number")
+    private Long instructorId;
 }

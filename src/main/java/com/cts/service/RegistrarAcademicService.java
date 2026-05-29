@@ -7,12 +7,10 @@ import java.util.List;
 
 public interface RegistrarAcademicService {
 
+    // Creates course AND assigns instructor in one step
     RegistrarCourseResponseDTO provisionNewCourse(RegistrarCourseCreateDTO createDTO);
-
-    RegistrarCourseResponseDTO assignInstructorToCourse(Long courseId, Long instructorId);
 
     List<RegistrarCourseResponseDTO> getAllConfiguredCourses();
 
-    // View all students enrolled in a course (read-only for registrar)
     List<EnrollmentOutputDTO> getEnrolledStudents(Long courseId);
 }
