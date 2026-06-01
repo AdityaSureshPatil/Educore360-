@@ -2,6 +2,7 @@ package com.cts.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "instructor")
@@ -21,6 +22,9 @@ public class Instructor {
 
     @Column(name = "experience")
     private Integer experience;
+
+    @Column(name = "date_of_birth")
+    private LocalDate dateOfBirth;
 
     @Column(name = "status")
     private String status;

@@ -7,11 +7,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import com.cts.dto.AssignmentOutputDTO;
-import com.cts.dto.EnrollmentOutputDTO;
-import com.cts.dto.StudentInputDTO;
-import com.cts.dto.StudentOutputDTO;
-import com.cts.dto.SubmissionOutputDTO;
+import com.cts.dto.*;
 import com.cts.service.StudentService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -24,7 +20,6 @@ public class StudentController {
     private final StudentService studentService;
 
     // 1. UPDATE STUDENT PROFILE
-    // PUT /student/profile/update
     @PutMapping("/profile/update")
     public ResponseEntity<StudentOutputDTO> updateStudentProfile(
             @Valid @RequestBody StudentInputDTO inputDTO) {
@@ -33,7 +28,6 @@ public class StudentController {
     }
 
     // 2. GET STUDENT BY ID
-    // GET /student/{studentId}
     @GetMapping("/{studentId}")
     public ResponseEntity<StudentOutputDTO> getStudentById(
             @PathVariable Long studentId) {
@@ -41,7 +35,15 @@ public class StudentController {
                 studentService.getStudentById(studentId), HttpStatus.OK);
     }
 
-    // 3. SELF ENROLL IN A COURSE
+    // 3. VIEW ALL COURSES (browse before enrolling)
+    // GET /student/courses/all
+    @GetMapping("/courses/all")
+    public ResponseEntity<List<RegistrarCourseResponseDTO>> getAllCourses() {
+        return new ResponseEntity<>(
+                studentService.getAllCourses(), HttpStatus.OK);
+    }
+
+    // 4. SELF ENROLL IN A COURSE
     // POST /student/{studentId}/course/{courseId}/enroll
     @PostMapping("/{studentId}/course/{courseId}/enroll")
     public ResponseEntity<EnrollmentOutputDTO> enrollInCourse(
@@ -51,8 +53,7 @@ public class StudentController {
                 studentService.enrollInCourse(studentId, courseId), HttpStatus.CREATED);
     }
 
-    // 4. VIEW MY ENROLLED COURSES
-    // GET /student/{studentId}/my-courses
+    // 5. VIEW MY ENROLLED COURSES
     @GetMapping("/{studentId}/my-courses")
     public ResponseEntity<List<EnrollmentOutputDTO>> getMyEnrolledCourses(
             @PathVariable Long studentId) {
@@ -60,8 +61,7 @@ public class StudentController {
                 studentService.getMyEnrolledCourses(studentId), HttpStatus.OK);
     }
 
-    // 5. VIEW ASSIGNMENTS FOR AN ENROLLED COURSE
-    // GET /student/{studentId}/course/{courseId}/assignments
+    // 6. VIEW ASSIGNMENTS FOR AN ENROLLED COURSE
     @GetMapping("/{studentId}/course/{courseId}/assignments")
     public ResponseEntity<List<AssignmentOutputDTO>> getAssignmentsForCourse(
             @PathVariable Long studentId,
@@ -71,38 +71,59 @@ public class StudentController {
                 HttpStatus.OK);
     }
 
-    // 6. DOWNLOAD COURSE MATERIAL PDF (enrolled students only)
-    // GET /student/{studentId}/course/{courseId}/material/download
-    @GetMapping("/{studentId}/course/{courseId}/material/download")
-    public ResponseEntity<byte[]> downloadCourseMaterial(
+    // 7. VIEW ALL COURSE MATERIAL FILES (enrolled only)
+    // GET /student/{studentId}/course/{courseId}/materials
+    @GetMapping("/{studentId}/course/{courseId}/materials")
+    public ResponseEntity<List<CourseMaterialFileOutputDTO>> getCourseMaterialFiles(
             @PathVariable Long studentId,
             @PathVariable Long courseId) {
-        byte[] fileBytes = studentService.downloadCourseMaterial(studentId, courseId);
-        String fileName = studentService.getCourseMaterialFileName(studentId, courseId);
+        return new ResponseEntity<>(
+                studentService.getCourseMaterialFiles(studentId, courseId),
+                HttpStatus.OK);
+    }
+
+    // 8. DOWNLOAD SPECIFIC COURSE MATERIAL FILE BY fileId (enrolled only)
+    // GET /student/{studentId}/material/{fileId}/download
+    @GetMapping("/{studentId}/material/{fileId}/download")
+    public ResponseEntity<byte[]> downloadCourseMaterialFile(
+            @PathVariable Long studentId,
+            @PathVariable Long fileId) {
+        byte[] bytes = studentService.downloadCourseMaterialFile(studentId, fileId);
+        String fileName = studentService.getCourseMaterialFileName(studentId, fileId);
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_PDF)
                 .header(HttpHeaders.CONTENT_DISPOSITION,
                         "attachment; filename=\"" + fileName + "\"")
-                .body(fileBytes);
+                .body(bytes);
     }
 
-    // 7. DOWNLOAD ASSIGNMENT PDF (enrolled students only)
-    // GET /student/{studentId}/assignment/{assignmentId}/download
-    @GetMapping("/{studentId}/assignment/{assignmentId}/download")
-    public ResponseEntity<byte[]> downloadAssignmentFile(
+    // 9. VIEW ALL FILES FOR AN ASSIGNMENT (enrolled only)
+    // GET /student/{studentId}/assignment/{assignmentId}/files
+    @GetMapping("/{studentId}/assignment/{assignmentId}/files")
+    public ResponseEntity<List<AssignmentFileOutputDTO>> getAssignmentFiles(
             @PathVariable Long studentId,
             @PathVariable Long assignmentId) {
-        byte[] fileBytes = studentService.downloadAssignmentFile(studentId, assignmentId);
-        String fileName = studentService.getAssignmentFileName(studentId, assignmentId);
+        return new ResponseEntity<>(
+                studentService.getAssignmentFiles(studentId, assignmentId),
+                HttpStatus.OK);
+    }
+
+    // 10. DOWNLOAD SPECIFIC ASSIGNMENT FILE BY fileId (enrolled only)
+    // GET /student/{studentId}/assignment-file/{fileId}/download
+    @GetMapping("/{studentId}/assignment-file/{fileId}/download")
+    public ResponseEntity<byte[]> downloadAssignmentFile(
+            @PathVariable Long studentId,
+            @PathVariable Long fileId) {
+        byte[] bytes = studentService.downloadAssignmentFile(studentId, fileId);
+        String fileName = studentService.getAssignmentFileName(studentId, fileId);
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_PDF)
                 .header(HttpHeaders.CONTENT_DISPOSITION,
                         "attachment; filename=\"" + fileName + "\"")
-                .body(fileBytes);
+                .body(bytes);
     }
 
-    // 8. SUBMIT ASSIGNMENT PDF (enrolled students only)
-    // POST /student/{studentId}/assignment/{assignmentId}/submit
+    // 11. SUBMIT ASSIGNMENT PDF (enrolled only)
     @PostMapping(value = "/{studentId}/assignment/{assignmentId}/submit",
                  consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<SubmissionOutputDTO> submitAssignment(
@@ -114,8 +135,7 @@ public class StudentController {
                 HttpStatus.CREATED);
     }
 
-    // 9. VIEW MY SUBMISSIONS
-    // GET /student/{studentId}/my-submissions
+    // 12. VIEW MY SUBMISSIONS
     @GetMapping("/{studentId}/my-submissions")
     public ResponseEntity<List<SubmissionOutputDTO>> getMySubmissions(
             @PathVariable Long studentId) {

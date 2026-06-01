@@ -1,6 +1,7 @@
 package com.cts.dto;
 
 import lombok.*;
+import java.time.LocalDate;
 
 @Data
 @NoArgsConstructor
@@ -9,6 +10,7 @@ import lombok.*;
 public class RegistrarOutputDTO {
 
     private Long registrarId;
+    private LocalDate dateOfBirth;
     private String emergencyContact;
     private String addressLine;
     private String postalCode;

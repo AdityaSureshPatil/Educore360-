@@ -2,6 +2,7 @@ package com.cts.dto;
 
 import jakarta.validation.constraints.*;
 import lombok.*;
+import java.time.LocalDate;
 
 @Data
 @NoArgsConstructor
@@ -12,11 +13,10 @@ public class RegistrarInputDTO {
     @NotNull(message = "User ID is required")
     @Positive(message = "User ID must be a positive number")
     private Long userId;
-    
-    @NotNull(message = "Instructor ID is required")
-    @Positive(message = "Instructor ID should be positive")
-    private long InstructorId;
-    
+
+    @Past(message = "Date of birth must be a past date")
+    private LocalDate dateOfBirth;
+
     @Pattern(regexp = "^[6-9]\\d{9}$",
              message = "Emergency contact must be a valid 10-digit mobile number")
     private String emergencyContact;

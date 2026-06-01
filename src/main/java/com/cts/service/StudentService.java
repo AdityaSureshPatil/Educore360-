@@ -1,7 +1,10 @@
 package com.cts.service;
 
+import com.cts.dto.AssignmentFileOutputDTO;
 import com.cts.dto.AssignmentOutputDTO;
+import com.cts.dto.CourseMaterialFileOutputDTO;
 import com.cts.dto.EnrollmentOutputDTO;
+import com.cts.dto.RegistrarCourseResponseDTO;
 import com.cts.dto.StudentInputDTO;
 import com.cts.dto.StudentOutputDTO;
 import com.cts.dto.SubmissionOutputDTO;
@@ -14,24 +17,29 @@ public interface StudentService {
 
     StudentOutputDTO getStudentById(Long studentId);
 
-    // Student self-enrolls in a course
+    List<RegistrarCourseResponseDTO> getAllCourses();
+
     EnrollmentOutputDTO enrollInCourse(Long studentId, Long courseId);
 
-    // View all courses student is enrolled in
     List<EnrollmentOutputDTO> getMyEnrolledCourses(Long studentId);
 
-    // Only enrolled students can view assignments
     List<AssignmentOutputDTO> getAssignmentsForCourse(Long studentId, Long courseId);
 
-    // Download course material PDF (enrolled students only)
-    byte[] downloadCourseMaterial(Long studentId, Long courseId);
-    String getCourseMaterialFileName(Long studentId, Long courseId);
+    // View all material files for an enrolled course
+    List<CourseMaterialFileOutputDTO> getCourseMaterialFiles(Long studentId,
+                                                              Long courseId);
 
-    // Download assignment PDF (enrolled students only)
-    byte[] downloadAssignmentFile(Long studentId, Long assignmentId);
-    String getAssignmentFileName(Long studentId, Long assignmentId);
+    // Download specific material file by fileId
+    byte[] downloadCourseMaterialFile(Long studentId, Long fileId);
+    String getCourseMaterialFileName(Long studentId, Long fileId);
 
-    // Only enrolled students can submit
+    // View all files for an assignment
+    List<AssignmentFileOutputDTO> getAssignmentFiles(Long studentId, Long assignmentId);
+
+    // Download specific assignment file by fileId
+    byte[] downloadAssignmentFile(Long studentId, Long fileId);
+    String getAssignmentFileName(Long studentId, Long fileId);
+
     SubmissionOutputDTO submitAssignment(Long studentId, Long assignmentId,
                                          MultipartFile file);
 

@@ -17,13 +17,16 @@ public class StudentInputDTO {
     @Past(message = "Date of birth must be a past date")
     private LocalDate dateOfBirth;
 
-    @Size(min = 2, max = 100, message = "Education level must be between 2 and 100 characters")
+    @Size(min = 2, max = 100,
+          message = "Education level must be between 2 and 100 characters")
     private String educationLevel;
 
-    @Size(min = 2, max = 150, message = "Field of interest must be between 2 and 150 characters")
+    @Size(min = 2, max = 150,
+          message = "Field of interest must be between 2 and 150 characters")
     private String fieldOfInterest;
 
-    @Size(min = 2, max = 100, message = "Country must be between 2 and 100 characters")
+    @Size(min = 2, max = 100,
+          message = "Country must be between 2 and 100 characters")
     private String country;
 
     @Size(max = 500, message = "Bio cannot exceed 500 characters")

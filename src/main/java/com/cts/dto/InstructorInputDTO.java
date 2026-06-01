@@ -2,6 +2,7 @@ package com.cts.dto;
 
 import jakarta.validation.constraints.*;
 import lombok.*;
+import java.time.LocalDate;
 
 @Data
 @NoArgsConstructor
@@ -21,6 +22,9 @@ public class InstructorInputDTO {
     @Min(value = 0, message = "Experience cannot be negative")
     @Max(value = 50, message = "Experience cannot exceed 50 years")
     private Integer experience;
+
+    @Past(message = "Date of birth must be a past date")
+    private LocalDate dateOfBirth;
 
     @Pattern(regexp = "^[6-9]\\d{9}$",
              message = "Emergency contact must be a valid 10-digit mobile number")

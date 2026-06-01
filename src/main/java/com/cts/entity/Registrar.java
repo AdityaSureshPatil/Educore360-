@@ -2,6 +2,7 @@ package com.cts.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "registrar")
@@ -18,6 +19,9 @@ public class Registrar {
     @OneToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    @Column(name = "date_of_birth")
+    private LocalDate dateOfBirth;
 
     @Column(name = "emergency_contact", length = 15)
     private String emergencyContact;

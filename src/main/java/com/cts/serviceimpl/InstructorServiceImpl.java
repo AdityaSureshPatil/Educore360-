@@ -1,9 +1,12 @@
 package com.cts.serviceimpl;
 
+import java.time.LocalDate;
+import java.time.Period;
 import org.springframework.stereotype.Service;
 import com.cts.dto.InstructorInputDTO;
 import com.cts.dto.InstructorOutputDTO;
 import com.cts.entity.Instructor;
+import com.cts.exception.BusinessException;
 import com.cts.exception.InstructorNotFoundException;
 import com.cts.repository.InstructorRepository;
 import com.cts.service.InstructorService;
@@ -24,8 +27,18 @@ public class InstructorServiceImpl implements InstructorService {
                         "Instructor profile not found for user id: " + inputDTO.getUserId()
                         + ". Make sure user is registered with role INSTRUCTOR."));
 
+        // Age validation — minimum 25 years
+        if (inputDTO.getDateOfBirth() != null) {
+            int age = Period.between(inputDTO.getDateOfBirth(), LocalDate.now()).getYears();
+            if (age < 25) {
+                throw new BusinessException(
+                        "Instructor must be at least 25 years old, Please provide the correct age.");
+            }
+        }
+
         instructor.setSkill(inputDTO.getSkill());
         instructor.setExperience(inputDTO.getExperience());
+        instructor.setDateOfBirth(inputDTO.getDateOfBirth());
         instructor.setEmergencyContact(inputDTO.getEmergencyContact());
         instructor.setAddressLine(inputDTO.getAddressLine());
         instructor.setPostalCode(inputDTO.getPostalCode());
@@ -38,6 +51,7 @@ public class InstructorServiceImpl implements InstructorService {
                 .instructorId(instructor.getInstructorId())
                 .skill(instructor.getSkill())
                 .experience(instructor.getExperience())
+                .dateOfBirth(instructor.getDateOfBirth())
                 .status(instructor.getStatus())
                 .emergencyContact(instructor.getEmergencyContact())
                 .addressLine(instructor.getAddressLine())

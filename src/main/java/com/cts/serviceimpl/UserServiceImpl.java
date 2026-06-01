@@ -124,28 +124,33 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public LoginResponseDTO userLogin(LoginDTO loginDTO) {
+
+        // 1. Validate email format
         if (!isValidEmail(loginDTO.getEmail())) {
             throw new InvalidEmailException("Invalid email format");
         }
+
+        // 2. Fetch user by email
         User user = userRepository.findByEmail(loginDTO.getEmail());
         if (user == null) {
             throw new UserNotFoundException("Invalid credentials");
         }
+
+        // 3. Check password
         if (!passwordEncoder.matches(loginDTO.getPassword(), user.getPassword())) {
             throw new UserNotFoundException("Invalid credentials");
         }
-        if (loginDTO.getRole() == null
-                || !user.getRole().name().equalsIgnoreCase(loginDTO.getRole().trim())) {
-            throw new UserNotFoundException("Role mismatch: access denied");
-        }
+
+        // 4. Check account is active
         if (!"ACTIVE".equalsIgnoreCase(user.getStatus())) {
-            throw new UserNotFoundException("User is not active");
+            throw new UserNotFoundException("User account is not active");
         }
 
-        // Auto-update lastLoginAt on every successful login
+        // 5. Auto-update lastLoginAt
         user.setLastLoginAt(LocalDateTime.now());
         userRepository.save(user);
 
+        // 6. Return response — role fetched from DB, not from input
         return LoginResponseDTO.builder()
                 .email(user.getEmail())
                 .userName(user.getName())
