@@ -3,6 +3,7 @@ package com.cts.entity;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import jakarta.persistence.*;
+import jakarta.validation.Valid;
 import lombok.*;
 import com.cts.enumerate.Role;
 

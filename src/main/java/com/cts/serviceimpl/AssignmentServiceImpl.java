@@ -54,7 +54,7 @@ public class AssignmentServiceImpl implements AssignmentService {
 
         Assignment saved = assignmentRepository.save(assignment);
 
-        // If file provided — save new row in assignment_file table
+        // If file provided — save new row in assignment_file table only
         if (file != null && !file.isEmpty()) {
             String savedPath = fileStorageService.storeFile(file, "assignments");
 
@@ -66,11 +66,6 @@ public class AssignmentServiceImpl implements AssignmentService {
                     .build();
 
             assignmentFileRepository.save(assignmentFile);
-
-            // Keep latest reference on assignment for backward compatibility
-            saved.setFilePath(savedPath);
-            saved.setFileName(file.getOriginalFilename());
-            assignmentRepository.save(saved);
         }
 
         return mapToOutputDTO(saved);
@@ -101,7 +96,7 @@ public class AssignmentServiceImpl implements AssignmentService {
                 .findByCourseIdAndInstructor_InstructorId(courseId, instructorId)
                 .orElseThrow(() -> new CourseNotAssignedToInstructorException(
                         "Course " + courseId + " is not assigned to instructor "
-                        + instructorId));
+                                + instructorId));
     }
 
     private AssignmentOutputDTO mapToOutputDTO(Assignment a) {
@@ -109,7 +104,6 @@ public class AssignmentServiceImpl implements AssignmentService {
                 .assignmentId(a.getAssignmentId())
                 .title(a.getTitle())
                 .instructions(a.getInstructions())
-                .fileName(a.getFileName())
                 .totalMarks(a.getTotalMarks())
                 .publishedAt(a.getPublishedAt())
                 .courseId(a.getCourse().getCourseId())

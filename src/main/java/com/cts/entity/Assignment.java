@@ -23,14 +23,6 @@ public class Assignment {
     @Column(name = "instructions", columnDefinition = "TEXT")
     private String instructions;
 
-    // Path to uploaded PDF on local server
-    @Column(name = "file_path")
-    private String filePath;
-
-    // Original filename shown to students
-    @Column(name = "file_name")
-    private String fileName;
-
     @Column(name = "total_marks")
     private Double totalMarks;
 

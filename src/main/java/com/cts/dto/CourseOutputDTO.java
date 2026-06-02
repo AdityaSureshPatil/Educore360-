@@ -19,9 +19,9 @@ public class CourseOutputDTO {
     // DRAFT / PENDING_APPROVAL / PUBLISHED
     private String status;
 
-    // Material published by instructor
+    // Text material published by instructor (null if PDF-only)
     private String learningMaterial;
-    private String materialFileName;
+
     private boolean isPublished;
 
     // Assigned instructor info

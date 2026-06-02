@@ -306,13 +306,18 @@ public class StudentServiceImpl implements StudentService {
                 .build();
     }
 
+    // fileName removed — Assignment no longer has this field
+    // Use getAssignmentFiles() to list files per assignment
     private AssignmentOutputDTO mapAssignmentToOutputDTO(Assignment a) {
         return AssignmentOutputDTO.builder()
-                .assignmentId(a.getAssignmentId()).title(a.getTitle())
-                .instructions(a.getInstructions()).fileName(a.getFileName())
-                .totalMarks(a.getTotalMarks()).publishedAt(a.getPublishedAt())
+                .assignmentId(a.getAssignmentId())
+                .title(a.getTitle())
+                .instructions(a.getInstructions())
+                .totalMarks(a.getTotalMarks())
+                .publishedAt(a.getPublishedAt())
                 .courseId(a.getCourse().getCourseId())
-                .courseTitle(a.getCourse().getTitle()).build();
+                .courseTitle(a.getCourse().getTitle())
+                .build();
     }
 
     private SubmissionOutputDTO mapSubmissionToOutputDTO(Submission s) {

@@ -44,8 +44,8 @@ public class CourseServiceImpl implements CourseService {
     }
 
     // ── PUBLISH COURSE MATERIAL ───────────────────────────────────────
-    // PDF → creates new row in course_material_file table (previous files kept)
-    // Text → updates learning_material field on Course entity
+    // PDF  → new row in course_material_file (previous files kept)
+    // Text → stored in learning_material field on Course entity
 
     @Override
     public CourseMaterialFileOutputDTO publishCourseMaterial(Long instructorId,
@@ -56,10 +56,8 @@ public class CourseServiceImpl implements CourseService {
 
         if (file != null && !file.isEmpty()) {
 
-            // Save file to disk
             String savedPath = fileStorageService.storeFile(file, "materials");
 
-            // Create new row in course_material_file — does NOT replace old ones
             CourseMaterialFile materialFile = CourseMaterialFile.builder()
                     .course(course)
                     .filePath(savedPath)
@@ -71,12 +69,10 @@ public class CourseServiceImpl implements CourseService {
             courseRepository.save(course);
 
             CourseMaterialFile saved = materialFileRepository.save(materialFile);
-
             return mapToMaterialFileOutputDTO(saved);
 
         } else if (textContent != null && !textContent.isBlank()) {
 
-            // Text material — stored on Course entity directly
             course.setLearningMaterial(textContent);
             course.setPublished(true);
             courseRepository.save(course);
@@ -123,7 +119,7 @@ public class CourseServiceImpl implements CourseService {
                 .findByCourseIdAndInstructor_InstructorId(courseId, instructorId)
                 .orElseThrow(() -> new CourseNotAssignedToInstructorException(
                         "Course " + courseId + " is not assigned to instructor "
-                        + instructorId));
+                                + instructorId));
     }
 
     private CourseOutputDTO mapToOutputDTO(Course course) {
@@ -137,7 +133,6 @@ public class CourseServiceImpl implements CourseService {
                 .version(course.getVersion())
                 .status(course.getStatus())
                 .learningMaterial(course.getLearningMaterial())
-                .materialFileName(course.getMaterialFileName())
                 .isPublished(course.isPublished())
                 .instructorId(course.getInstructor() != null
                         ? course.getInstructor().getInstructorId() : null)
@@ -146,8 +141,7 @@ public class CourseServiceImpl implements CourseService {
                 .build();
     }
 
-    private CourseMaterialFileOutputDTO mapToMaterialFileOutputDTO(
-            CourseMaterialFile f) {
+    private CourseMaterialFileOutputDTO mapToMaterialFileOutputDTO(CourseMaterialFile f) {
         return CourseMaterialFileOutputDTO.builder()
                 .fileId(f.getFileId())
                 .courseId(f.getCourse().getCourseId())

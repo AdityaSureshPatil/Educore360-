@@ -16,11 +16,10 @@ public class Course {
     @Column(name = "course_id")
     private Long courseId;
 
-    // Core fields (set by registrar)
     @Column(name = "title", nullable = false)
     private String title;
 
-    @Column(name = "description")
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
     @Column(name = "target_skill")
@@ -39,24 +38,14 @@ public class Course {
     @Column(name = "status")
     private String status;
 
-    // Assigned by registrar
-    @ManyToOne
-    @JoinColumn(name = "instructor_id")
-    private Instructor instructor;
-
-    // Set by instructor when publishing material
-    @Lob
+    // Text-based learning material (optional — PDF files stored in course_material_file)
     @Column(name = "learning_material", columnDefinition = "TEXT")
     private String learningMaterial;
 
-    // Path to uploaded PDF on local server (if material is a file)
-    @Column(name = "material_file_path")
-    private String materialFilePath;
+    @Column(name = "is_published")
+    private boolean isPublished;
 
-    // Original filename shown to students
-    @Column(name = "material_file_name")
-    private String materialFileName;
-
-    @Column(name = "is_published", nullable = false)
-    private boolean isPublished = false;
+    @ManyToOne
+    @JoinColumn(name = "instructor_id")
+    private Instructor instructor;
 }
